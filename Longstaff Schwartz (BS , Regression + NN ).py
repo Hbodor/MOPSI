@@ -1,6 +1,6 @@
 from numpy import linalg, zeros, ones, hstack, asarray
 import itertools
-from math import sqrt
+
 
 def basis_vector(n, i):
     """ Return an array like [0, 0, ..., 1, ..., 0, 0]
@@ -73,9 +73,6 @@ def multipolyfit(xs, y, deg, full=False, model_out=True, powers_out=False):
         return beta, powers
     return beta
 
-def compute(beta,powers,xs):
-    return "lul"
-    
 def mk_model(beta, powers):
     """ Create a callable pyTaun function out of beta/powers from multipolyfit
 
@@ -103,7 +100,7 @@ def mk_sympy_function(beta, powers):
     xs = (S.One,) + symbols('x0:%d'%num_covariates)
     return Add(*[coeff * Mul(*[x**deg for x, deg in zip(xs, power)])
                         for power, coeff in zip(powers, beta)])
-                        
+          
 
 ##########################################################################################################################################################################################################
 #Neural Network
@@ -120,10 +117,13 @@ class ApproxNet:
         model = Sequential()
         
         #input layer
-        model.add(Dense(input_length*2, input_dim=input_length,kernel_initializer='he_normal', activation='exponential'))
+        model.add(Dense(input_length*3, input_dim=input_length,kernel_initializer='he_normal', activation='exponential'))
         
         #hidden layers
-        model.add(Dense(input_length, activation='exponential'))
+        model.add(Dense(input_length*2, activation='exponential'))
+        
+        #hidden layers
+        # model.add(Dense(input_length, activation='exponential'))
         
         #output layer
         model.add(Dense(1, activation='exponential'))
@@ -160,18 +160,19 @@ from scipy.interpolate import *
 #Parameters
 
 
-sigma=0.3
-r_0=0.1
-x_0=100
-M=10000
-N=10
-r=r_0/N
-d=1-sigma/sqrt(N)
-u=1+sigma/sqrt(N)
-p= (1+r-d)/(u-d)
+sigma=0.3 #Volatility
+
+M=10000 #Number of paths
+
+N=2 #Years (Exercise each year) 
+
+r=0.03 #Risk-free interest rate (annual)
+
 
 X_0=[20]
 K=X_0
+
+reg=True # regression or neural network 
 
 ############################################################################################################
 
@@ -240,17 +241,6 @@ def next(X,k,W):
 
 
 #########################################################################################################################################################################################################"
-
-
-
-# N=10
-# 
-# u=2
-# d=0.5
-# X_0=[1,2]
-# K=[1,2]
-# r=0.1/N
-
 
 
 #function that generates a path
@@ -324,29 +314,34 @@ for kk in range(100):
     
     #construction of Taus
     
+    if reg:
     #REGRESSION
     
-    # for j in range(N-1,-1,-1):
-        
-    #     regresseur=regression(j,Taus,paths)
-        
-    #     for i in range(M):
-    #         if ( payOff(paths[i][j],K) >= regresseur( paths[i][j] ) ):
-    #             Taus[i][j]=j
-    #         else : 
-    #             Taus[i][j]=Taus[i][j+1]
     
-    # # ##Neural Network
-    for j in range(N-1,-1,-1):
-        
-        model= approximation(j,Taus,paths)
-        
-        for i in range(M):
+        for j in range(N-1,-1,-1):
             
-            if ( payOff(paths[i][j],K) >= model.predict( np.resize(paths[i][j],(1,len(X_0))) ) ):
-                Taus[i][j]=j
-            else : 
-                Taus[i][j]=Taus[i][j+1]
+            regresseur=regression(j,Taus,paths)
+            
+            for i in range(M):
+                if ( payOff(paths[i][j],K) >= regresseur( paths[i][j] ) ):
+                    Taus[i][j]=j
+                else : 
+                    Taus[i][j]=Taus[i][j+1]
+    else:
+        
+    
+    #Neural Network
+        
+        for j in range(N-1,-1,-1):
+            
+            model= approximation(j,Taus,paths)
+            
+            for i in range(M):
+                
+                if ( payOff(paths[i][j],K) >= model.predict( np.resize(paths[i][j],(1,len(X_0))) ) ):
+                    Taus[i][j]=j
+                else : 
+                    Taus[i][j]=Taus[i][j+1]
     
     
         

@@ -1,5 +1,5 @@
 import numpy as np
-from math import sqrt
+from math import sqrt,exp
 
 def prix_recursif_us(x,k,N,gain):
     res = p * prix_recursif_us(x*u,k+1,N) + (1-p)* prix_recursif_am(x*d,k+1,N)
@@ -11,8 +11,6 @@ def gain_put(x,K):
 def gain_call(x,K):
     return max(x-K,0)
 
-def payoff(X,K):
-    return np.sum([gain_put(x,K[i]) for (i,x) in enumerate(X)])
 
 def prix_am(x_0,N,k,gain):
     
@@ -33,16 +31,30 @@ def prix_am(x_0,N,k,gain):
             U[n,0:n+1] = [max(u,gain(x[k],K)) for (k,u) in enumerate(U[n,0:n+1])]
         
     return U[0,0]
+    
 
-sigma=0.3
-r=0.03
-K=20
-x_0=20
+    
+T = 1 #number of years
+    
+sigma=0.3 # Volatility 
+r_0=0.03 # interest rate (per year)
 
-N=100
-k=10 #1 for classic one, but != 1 for testing convergence to BS model.
-r=r_0/N
+K=20 #Strike price
+x_0=20 #Initial price
+
+N=1000 #Number of steps
+k=20 # Exercise time ( bermudean option )  : execution possible every k steps
+
+r=T*r_0/N
+
+a=sigma*sqrt(T/N) 
+
+d=exp(a)*(1+r) # down factor
+u=exp(-a)*(1+r) # up factor 
+
+p= (1+r-d)/(u-d)
 
 
 U=prix_am(x_0,N,k,gain_put)
+
 print(U)
