@@ -1,0 +1,38 @@
+﻿Projects:
+
+*Optimisation et RO:
+--
+
+
+*Analyse et EDP:
+--Calcul de structure électronique ( ALgébre linéaire , hpc, Quantique)
+--
+-- Sortie d'un état métastable ( Probléme aux valeurs propres, proba, analyse )
+--
+* Proba: lapyere
+--Calibration des modéle en finance ( Les meilleurs paramétres du modéle , marchés , )
+-- Réseaux neurinaux en assurance ( risque , cout d assurance, modéles réduit basés sur réseaux de neurone, valuatrice)
+
+
+* Proba : francois:
+-- Battage de cartes ( chaines de Markov)
+--Modéle épidemie
+
+*Proba3:
+--Records ,princesse ... (quand s'arréter)
+-- Equations différentielles stochastiques pour le "big" data ( )
+
+*Informatique: Monasse
+-- Estimation fine de la distorsion de caméra ( corriger effets de distortion)
+-- Calcul de carte de disparités en stéréo par programmation
+dynamique (à partie de deux images on construit la profondeur)
+--
+--
+--Stratégie d'exploration d'états pour la programmation
+d’un jeu de réflexion ( Othello )
+-- Reconnaissabce d images pour le e_commerce (reconnaissance d images avec collégue de Jumia)
+
+* Avec TDLOG ?
+
+
+http://cermics.enpc.fr/scilab_new/site/Tp/Probabilites/arret_scilab_ddi/
