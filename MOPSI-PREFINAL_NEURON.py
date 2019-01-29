@@ -326,27 +326,27 @@ for kk in range(100):
     
     #REGRESSION
     
-    for j in range(N-1,-1,-1):
-        
-        regresseur=regression(j,Taus,paths)
-        
-        for i in range(M):
-            if ( payOff(paths[i][j],K) >= regresseur( paths[i][j] ) ):
-                Taus[i][j]=j
-            else : 
-                Taus[i][j]=Taus[i][j+1]
-    
-    # # # ##Neural Network
     # for j in range(N-1,-1,-1):
-    #     
-    #     model= approximation(j,Taus,paths)
-    #     
+        
+    #     regresseur=regression(j,Taus,paths)
+        
     #     for i in range(M):
-    #         
-    #         if ( payOff(paths[i][j],K) >= model.predict( np.resize(paths[i][j],(1,len(X_0))) ) ):
+    #         if ( payOff(paths[i][j],K) >= regresseur( paths[i][j] ) ):
     #             Taus[i][j]=j
     #         else : 
     #             Taus[i][j]=Taus[i][j+1]
+    
+    # # ##Neural Network
+    for j in range(N-1,-1,-1):
+        
+        model= approximation(j,Taus,paths)
+        
+        for i in range(M):
+            
+            if ( payOff(paths[i][j],K) >= model.predict( np.resize(paths[i][j],(1,len(X_0))) ) ):
+                Taus[i][j]=j
+            else : 
+                Taus[i][j]=Taus[i][j+1]
     
     
         

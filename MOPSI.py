@@ -44,3 +44,4 @@ p= (1+r-d)/(u-d)
 
 
 U=prix_am(x_0,N,gain_put)
+print(U)
