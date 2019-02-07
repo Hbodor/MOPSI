@@ -34,7 +34,7 @@ def prix_am(x_0,N,k,gain):
     
 
     
-T = 1 #number of years
+T = 5 #number of years
     
 sigma=0.3 # Volatility 
 r_0=0.03 # interest rate (per year)
@@ -42,19 +42,22 @@ r_0=0.03 # interest rate (per year)
 K=20 #Strike price
 x_0=20 #Initial price
 
-N=1000 #Number of steps
-k=20 # Exercise time ( bermudean option )  : execution possible every k steps
+N=10000 #Number of steps
+k= 5 # Exercice times  (frequency ? ) in T ( bermudean option )  : eg g every T/12 ; k = N if american
 
 r=T*r_0/N
 
 a=sigma*sqrt(T/N) 
 
-d=exp(a)*(1+r) # down factor
-u=exp(-a)*(1+r) # up factor 
+d=exp(-a)*(1+r) # down factor
+u=exp(a)*(1+r) # up factor 
 
 p= (1+r-d)/(u-d)
 
+n_k=N//k #we scale the exercice times to the number of steps
+N = n_k * k #we round the steps
 
-U=prix_am(x_0,N,k,gain_put)
+
+U=prix_am(x_0,N,n_k,gain_put)
 
 print(U)

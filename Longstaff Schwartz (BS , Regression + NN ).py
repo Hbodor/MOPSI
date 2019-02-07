@@ -117,18 +117,18 @@ class ApproxNet:
         model = Sequential()
         
         #input layer
-        model.add(Dense(input_length*3, input_dim=input_length,kernel_initializer='he_normal', activation='exponential'))
+        model.add(Dense(input_length, input_dim=input_length,kernel_initializer='he_normal', activation=keras.activations.elu(x, alpha=1.0)))
         
         #hidden layers
-        model.add(Dense(input_length*2, activation='exponential'))
+        model.add(Dense(input_length*3, activation=keras.activations.elu(x, alpha=1.0)))
         
         #hidden layers
-        # model.add(Dense(input_length, activation='exponential'))
+        model.add(Dense(input_length*2, activation=keras.activations.elu(x, alpha=1.0)))
         
         #output layer
-        model.add(Dense(1, activation='exponential'))
+        model.add(Dense(1, activation=keras.activations.elu(x, alpha=1.0)))
 
-        model.compile(loss='mse', optimizer='adam', metrics=['accuracy','mse', 'mae', 'mape', 'cosine'])
+        model.compile(loss='mse', optimizer='RMSprop', metrics=['accuracy','mse', 'mae', 'mape', 'cosine'])
         # return the constructed network architecture
         return model
         
@@ -142,14 +142,16 @@ def approximation(j,Tau,paths):
     for i,path in enumerate(paths):
         payOffs.append(B(j,Tau[i][j+1])*payOff(path[Tau[i][j+1]],K))
         x[i,:]=np.asarray(path[j])
+    x = np.log(x)
+    print(np.mean(x))
     
     print(x.shape,x[0:1].shape)
     
-    history = model.fit(x, payOffs, batch_size=32, epochs=10, verbose=0)
+    history = model.fit(x, payOffs, batch_size=32, epochs=50, verbose=0)
     
 
     
-    return model
+    return (model,history)
 
 
 ####################################
@@ -162,9 +164,13 @@ from scipy.interpolate import *
 
 sigma=0.3 #Volatility
 
-M=10000 #Number of paths
+M=5000 #Number of paths
 
-N=2 #Years (Exercise each year) 
+T=5 # Expiration (in years)
+dt = 1 # steps of exercise (in years)
+
+N = int(T/dt) #number of iterations
+
 
 r=0.03 #Risk-free interest rate (annual)
 
@@ -172,7 +178,7 @@ r=0.03 #Risk-free interest rate (annual)
 X_0=[20]
 K=X_0
 
-reg=True # regression or neural network 
+reg=False # regression or neural network 
 
 ############################################################################################################
 
@@ -181,12 +187,11 @@ reg=True # regression or neural network
 #Genaerating a p-dimensional Brownian motion
 
 from scipy.stats import norm
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from math import sqrt,log,exp
 
 # Process parameters
-delta = 1
-dt = 1
+
 
 
 def genBM():
@@ -223,13 +228,13 @@ for i in range(len(Sigma[0])):
         summ+=Sigma[i][j]**2
     SIGMA2.append(summ)
 
-def next(X,k,W):
+def next(X,k,W,dt):
     L=[]
     for i in range(len(X)):
         summ=0  #will play the role of sum(sigma(i,j)*Wk(j))
         for j in range( len(X)):
             summ+=Sigma[i][j]*W[j][k-1]  #Because we willl never calculate the first value of the assets
-        exposant=(r-1/2*SIGMA2[i])*k+summ
+        exposant=(r-1/2*SIGMA2[i])*k*dt+summ
         L.append(X[i]*exp(exposant))
     return L
         
@@ -249,7 +254,7 @@ def pathGen(X_0):
     L=[0 for i in range(N+1)]
     L[0]=X_0
     for i in range(1,N+1):
-        L[i]=next(X_0,i,W)
+        L[i]=next(X_0,i,W,dt)
     return L
 
 
@@ -269,10 +274,10 @@ def payOff(X,K):
 
 #Interest rate function
 def B(j,k):
-    P=1
-    for i in range(j,k):
-        P*=1/(1+r)
-    return P
+    # P=1
+    # for i in range(j,k):
+    #     P*=1/(1+r)
+    return exp(-r*(k-j)*dt)
 
 def price(Taus,paths):
     Q=0
@@ -292,9 +297,10 @@ def regression(j,Tau,paths):
         payOffs.append(B(j,Tau[i][j+1])*payOff(path[Tau[i][j+1]],K))
         
         x.append(path[j])
-    p3=multipolyfit(x, payOffs, 3)
+    p3=multipolyfit(x, payOffs, 5)
     return p3   
-
+HISTORY=[]
+HISTORY2=[]
 for kk in range(100):
       
     #Generating paths
@@ -322,6 +328,7 @@ for kk in range(100):
             
             regresseur=regression(j,Taus,paths)
             
+            
             for i in range(M):
                 if ( payOff(paths[i][j],K) >= regresseur( paths[i][j] ) ):
                     Taus[i][j]=j
@@ -334,19 +341,20 @@ for kk in range(100):
         
         for j in range(N-1,-1,-1):
             
-            model= approximation(j,Taus,paths)
-            
+            model,history = approximation(j,Taus,paths)
+            HISTORY.append(history.history["loss"])
+            HISTORY2.append(history)
             for i in range(M):
                 
-                if ( payOff(paths[i][j],K) >= model.predict( np.resize(paths[i][j],(1,len(X_0))) ) ):
+                if ( payOff(paths[i][j],K) >= model.predict( np.log(np.resize(paths[i][j],(1,len(X_0))) ) )):
                     Taus[i][j]=j
                 else : 
                     Taus[i][j]=Taus[i][j+1]
     
     
-        
-    print(price(Taus,paths))
     
+    print(price(Taus,paths))
+    break
     
     
 
