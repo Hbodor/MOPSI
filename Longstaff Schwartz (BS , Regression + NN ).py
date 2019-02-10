@@ -117,16 +117,16 @@ class ApproxNet:
         model = Sequential()
         
         #input layer
-        model.add(Dense(input_length, input_dim=input_length,kernel_initializer='he_normal', activation=keras.activations.elu(x, alpha=1.0)))
+        model.add(Dense(input_length*3 , input_dim=input_length,kernel_initializer='he_normal',activation="selu"))
         
         #hidden layers
-        model.add(Dense(input_length*3, activation=keras.activations.elu(x, alpha=1.0)))
+        model.add(Dense(input_length*2, activation="selu"))
         
         #hidden layers
-        model.add(Dense(input_length*2, activation=keras.activations.elu(x, alpha=1.0)))
+        model.add(Dense(input_length, activation="selu"))
         
         #output layer
-        model.add(Dense(1, activation=keras.activations.elu(x, alpha=1.0)))
+        model.add(Dense(1,activation="selu"))
 
         model.compile(loss='mse', optimizer='RMSprop', metrics=['accuracy','mse', 'mae', 'mape', 'cosine'])
         # return the constructed network architecture
@@ -142,12 +142,12 @@ def approximation(j,Tau,paths):
     for i,path in enumerate(paths):
         payOffs.append(B(j,Tau[i][j+1])*payOff(path[Tau[i][j+1]],K))
         x[i,:]=np.asarray(path[j])
-    x = np.log(x)
-    print(np.mean(x))
+    # x = np.log(x)
+    # print(np.mean(x))
     
     print(x.shape,x[0:1].shape)
     
-    history = model.fit(x, payOffs, batch_size=32, epochs=50, verbose=0)
+    history = model.fit(x, payOffs, batch_size=32, epochs=100, verbose=0)
     
 
     
@@ -166,8 +166,8 @@ sigma=0.3 #Volatility
 
 M=5000 #Number of paths
 
-T=5 # Expiration (in years)
-dt = 1 # steps of exercise (in years)
+T=1 # Expiration (in years)
+dt = 1/3 # steps of exercise (in years)
 
 N = int(T/dt) #number of iterations
 
@@ -178,7 +178,7 @@ r=0.03 #Risk-free interest rate (annual)
 X_0=[20]
 K=X_0
 
-reg=False # regression or neural network 
+reg=True # regression or neural network 
 
 ############################################################################################################
 
@@ -210,7 +210,7 @@ def genBM():
         X=[]
         
         for k in range(n):
-            x = x + norm.rvs(scale=dt)
+            x = x + norm.rvs(scale=sqrt(dt))
             D.append(x)
         W.append(D)
     return W
@@ -346,7 +346,7 @@ for kk in range(100):
             HISTORY2.append(history)
             for i in range(M):
                 
-                if ( payOff(paths[i][j],K) >= model.predict( np.log(np.resize(paths[i][j],(1,len(X_0))) ) )):
+                if ( payOff(paths[i][j],K) >= model.predict( np.resize(paths[i][j],(1,len(X_0))) ) ):
                     Taus[i][j]=j
                 else : 
                     Taus[i][j]=Taus[i][j+1]
@@ -354,9 +354,6 @@ for kk in range(100):
     
     
     print(price(Taus,paths))
-    break
-    
-    
 
 
 
