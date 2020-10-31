@@ -14,7 +14,9 @@ def gain_call(x,K):
 
 
 def prix_am(x_0,N,k,gain):
-    
+    '''
+    Doc
+    '''
     U=np.zeros((N+1,N+1))
     
     x=[x_0*u**i * d**(N-i) for i in range(N+1)] 

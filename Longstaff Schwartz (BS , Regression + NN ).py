@@ -113,6 +113,9 @@ from keras.layers.core import Dense
 class ApproxNet:
     @staticmethod
     def build(input_length):
+        '''
+        Documentation ?
+        '''
         # initialize the model
         model = Sequential()
         

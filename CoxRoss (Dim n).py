@@ -5,9 +5,12 @@ import itertools
 
 
 class Node:
+    '''
+    Doc
+    '''
     def __init__(self,v,p):
-        self.v=v;
-        self.p=p;
+        self.v=v
+        self.p=p
     def __mul__(self,other):
         if type(self.v)==str:
             return Node(self.v+other.v,other.p)
@@ -38,6 +41,15 @@ class Node:
         return pr
         
 def prix_recursif_us(x,k,N,gain):
+    '''
+    Args:
+        x:
+        k:
+        N:
+        gain:
+    retruns:
+        ress
+    '''
     res = p * prix_recursif_us(x*u,k+1,N) + (1-p)* prix_recursif_am(x*d,k+1,N)
     return max(res/(1+r),gain(x))
         
